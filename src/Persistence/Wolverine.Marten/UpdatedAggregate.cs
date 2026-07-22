@@ -24,8 +24,7 @@ public class UpdatedAggregate : IResponseAware {
         {
             var idType = handling.AggregateId.VariableType;
 
-            // TODO -- with https://github.com/JasperFx/wolverine/issues/1167, this might need to try to create value
-            // type first
+            // Handle case where the aggregate is discovered via a natural key
             if (handling.IsNaturalKey)
             {
                 var valueTypeIdType = typeof(FetchLatestByNaturalKey<,>).CloseAndBuildAs<MethodCall>(
@@ -36,9 +35,13 @@ public class UpdatedAggregate : IResponseAware {
             }
             else
             {
-                var simpleOpenType = idType == typeof(Guid)
-                    ? typeof(FetchLatestByGuid<>)
-                    : typeof(FetchLatestByString<>);
+                var simpleOpenType = idType == typeof(Guid) ? typeof(FetchLatestByGuid<>) :
+                    idType == typeof(string) ? typeof(FetchLatestByString<>) : null;
+                // If the idType is not a natural key, and it is also not a Guid or a String
+                if (simpleOpenType is null)
+                {
+                    throw new ArgumentOutOfRangeException("Expected aggregate id type to be Guid or string. Did you forget to add a [NaturalKey] attribute? see: https://wolverinefx.net/guide/durability/marten/event-sourcing.html#natural-keys");
+                }
                 var frame = simpleOpenType.CloseAndBuildAs<MethodCall>(
                     handling.AggregateId,
                     handling.AggregateType);
@@ -82,9 +85,13 @@ public class UpdatedAggregate<T> : IResponseAware {
             }
             else
             {
-                var simpleOpenType = idType == typeof(Guid)
-                    ? typeof(FetchLatestByGuid<>)
-                    : typeof(FetchLatestByString<>);
+                var simpleOpenType = idType == typeof(Guid) ? typeof(FetchLatestByGuid<>) :
+                    idType == typeof(string) ? typeof(FetchLatestByString<>) : null;
+                // If the idType is not a natural key, and it is also not a Guid or a String
+                if (simpleOpenType is null)
+                {
+                    throw new ArgumentOutOfRangeException("Expected aggregate id type to be Guid or string. Did you forget to add a [NaturalKey] attribute? see: https://wolverinefx.net/guide/durability/marten/event-sourcing.html#natural-keys");
+                }
                 var frame = simpleOpenType.CloseAndBuildAs<MethodCall>(
                     handling.AggregateId,
                     handling.AggregateType);
@@ -109,12 +116,6 @@ internal class FetchLatestByGuid<T> : MethodCall
             Guid.Empty,
             CancellationToken.None))!)
     {
-        if (id.VariableType != typeof(Guid))
-        {
-            throw new ArgumentOutOfRangeException(
-                "Wolverine does not yet support strong typed identifiers for the aggregate workflow. See https://github.com/JasperFx/wolverine/issues/1167");
-        }
-
         Arguments[0] = id;
     }
 }
@@ -127,12 +128,6 @@ internal class FetchLatestByString<T> : MethodCall
             "",
             CancellationToken.None))!)
     {
-        if (id.VariableType != typeof(string))
-        {
-            throw new ArgumentOutOfRangeException(
-                "Wolverine does not yet support strong typed identifiers for the aggregate workflow. See https://github.com/JasperFx/wolverine/issues/1167");
-        }
-
         Arguments[0] = id;
     }
 }
