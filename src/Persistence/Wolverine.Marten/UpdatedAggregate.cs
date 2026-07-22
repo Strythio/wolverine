@@ -1,10 +1,7 @@
-using System.Reflection;
 using JasperFx.CodeGeneration.Frames;
 using JasperFx.CodeGeneration.Model;
 using JasperFx.Core.Reflection;
-using Marten;
 using Marten.Events;
-using Marten.Internal;
 using Wolverine.Configuration;
 
 namespace Wolverine.Marten;
