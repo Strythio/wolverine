@@ -24,11 +24,11 @@ public class UpdatedAggregate : IResponseAware {
             // Handle case where the aggregate is discovered via a natural key
             if (handling.IsNaturalKey)
             {
-                var valueTypeIdType = typeof(FetchLatestByNaturalKey<,>).CloseAndBuildAs<MethodCall>(
+                var frame = typeof(FetchLatestByNaturalKey<,>).CloseAndBuildAs<MethodCall>(
                     handling.AggregateId,
                     handling.AggregateType,
                     idType);
-                chain.UseForResponse(valueTypeIdType);
+                chain.UseForResponse(frame);
             }
             else
             {
@@ -74,11 +74,11 @@ public class UpdatedAggregate<T> : IResponseAware {
             // Handle case where the aggregate is discovered via a natural key
             if (handling.IsNaturalKey)
             {
-                var valueTypeIdType = typeof(FetchLatestByNaturalKey<,>).CloseAndBuildAs<MethodCall>(
+                var frame = typeof(FetchLatestByNaturalKey<,>).CloseAndBuildAs<MethodCall>(
                     handling.AggregateId,
                     handling.AggregateType,
                     idType);
-                chain.UseForResponse(valueTypeIdType);
+                chain.UseForResponse(frame);
             }
             else
             {
